@@ -1,0 +1,347 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+env:
+  PYTHON_VERSION: '3.11'
+  TEST_ENV: ci
+
+jobs:
+  lint:
+    name: Code Quality Checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8 black
+
+      - name: Run Black formatter check
+        run: black --check libraries/ config/
+
+      - name: Run Flake8 linter
+        run: flake8 libraries/ config/ --max-line-length=120 --exclude=venv
+
+  setup-certificates:
+    name: Generate Test Certificates
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install certificate dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install cryptography pyopenssl
+
+      - name: Generate certificates
+        run: python scripts/generate_certs.py
+
+      - name: Upload certificates artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-certificates
+          path: certs/
+          retention-days: 1
+
+  test-api:
+    name: API Tests
+    runs-on: ubuntu-latest
+    needs: setup-certificates
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download certificates
+        uses: actions/download-artifact@v3
+        with:
+          name: test-certificates
+          path: certs/
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Start services
+        run: |
+          docker-compose up -d mosquitto mock-api
+          sleep 10
+
+      - name: Wait for services
+        run: |
+          timeout 60 bash -c 'until curl -f http://localhost:8000/health; do sleep 2; done'
+
+      - name: Run API tests
+        run: |
+          robot --outputdir reports \
+                --loglevel INFO \
+                --include api \
+                --variable ENV:ci \
+                tests/api/
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: api-test-reports
+          path: reports/
+
+      - name: Stop services
+        if: always()
+        run: docker-compose down
+
+  test-mqtt:
+    name: MQTT Tests
+    runs-on: ubuntu-latest
+    needs: setup-certificates
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download certificates
+        uses: actions/download-artifact@v3
+        with:
+          name: test-certificates
+          path: certs/
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Start services
+        run: |
+          docker-compose up -d mosquitto mock-api
+          sleep 10
+
+      - name: Run MQTT tests
+        run: |
+          robot --outputdir reports \
+                --loglevel INFO \
+                --include mqtt \
+                --variable ENV:ci \
+                tests/mqtt/
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: mqtt-test-reports
+          path: reports/
+
+      - name: Stop services
+        if: always()
+        run: docker-compose down
+
+  test-security:
+    name: Security Tests
+    runs-on: ubuntu-latest
+    needs: setup-certificates
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download certificates
+        uses: actions/download-artifact@v3
+        with:
+          name: test-certificates
+          path: certs/
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Start services
+        run: |
+          docker-compose up -d mosquitto mock-api
+          sleep 10
+
+      - name: Run security tests
+        run: |
+          robot --outputdir reports \
+                --loglevel INFO \
+                --include security \
+                --variable ENV:ci \
+                tests/security/
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: security-test-reports
+          path: reports/
+
+      - name: Stop services
+        if: always()
+        run: docker-compose down
+
+  test-integration:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: setup-certificates
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download certificates
+        uses: actions/download-artifact@v3
+        with:
+          name: test-certificates
+          path: certs/
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Start services
+        run: |
+          docker-compose up -d mosquitto mock-api
+          sleep 10
+
+      - name: Run integration tests
+        run: |
+          robot --outputdir reports \
+                --loglevel INFO \
+                --include integration \
+                --variable ENV:ci \
+                tests/integration/
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: integration-test-reports
+          path: reports/
+
+      - name: Stop services
+        if: always()
+        run: docker-compose down
+
+  test-smoke:
+    name: Smoke Tests
+    runs-on: ubuntu-latest
+    needs: setup-certificates
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download certificates
+        uses: actions/download-artifact@v3
+        with:
+          name: test-certificates
+          path: certs/
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Start services
+        run: |
+          docker-compose up -d mosquitto mock-api
+          sleep 10
+
+      - name: Run smoke tests
+        run: |
+          robot --outputdir reports \
+                --loglevel INFO \
+                --include smoke \
+                --variable ENV:ci \
+                tests/
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: smoke-test-reports
+          path: reports/
+
+      - name: Stop services
+        if: always()
+        run: docker-compose down
+
+  generate-report:
+    name: Generate Test Report
+    runs-on: ubuntu-latest
+    needs: [test-api, test-mqtt, test-security, test-integration, test-smoke]
+    if: always()
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download all test reports
+        uses: actions/download-artifact@v3
+        with:
+          path: all-reports/
+
+      - name: Merge test results
+        run: |
+          mkdir -p merged-reports
+          find all-reports -name "output.xml" -exec cp {} merged-reports/ \;
+
+      - name: Upload merged reports
+        uses: actions/upload-artifact@v3
+        with:
+          name: merged-test-reports
+          path: merged-reports/
+
+      - name: Publish test results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: always()
+        with:
+          files: all-reports/**/output.xml
+          check_name: Test Results

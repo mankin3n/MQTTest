@@ -1,0 +1,72 @@
+version: '3.8'
+
+services:
+  # Mosquitto MQTT Broker with TLS
+  mosquitto:
+    image: eclipse-mosquitto:2.0
+    container_name: smarthome-mosquitto
+    ports:
+      - "8883:8883"  # MQTT with TLS
+      - "9001:9001"  # WebSockets with TLS
+    volumes:
+      - ./docker/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - ./certs:/mosquitto/certs:ro
+      - mosquitto-data:/mosquitto/data
+      - mosquitto-logs:/mosquitto/log
+    networks:
+      - smarthome-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mosquitto_sub", "-t", "$$SYS/#", "-C", "1", "-i", "healthcheck", "-W", "3"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Mock REST API
+  mock-api:
+    build:
+      context: ./docker
+      dockerfile: Dockerfile.mock-api
+    container_name: smarthome-mock-api
+    ports:
+      - "8000:8000"
+    environment:
+      - JWT_SECRET=dev-secret-key-change-in-production
+      - API_PORT=8000
+    networks:
+      - smarthome-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Test runner (optional - for running tests in Docker)
+  test-runner:
+    build:
+      context: .
+      dockerfile: Dockerfile.tests
+    container_name: smarthome-test-runner
+    volumes:
+      - .:/workspace
+      - test-reports:/workspace/reports
+    environment:
+      - TEST_ENV=ci
+      - PYTHONUNBUFFERED=1
+    networks:
+      - smarthome-network
+    depends_on:
+      - mosquitto
+      - mock-api
+    profiles:
+      - test
+
+networks:
+  smarthome-network:
+    driver: bridge
+
+volumes:
+  mosquitto-data:
+  mosquitto-logs:
+  test-reports:

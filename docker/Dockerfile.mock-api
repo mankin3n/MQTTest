@@ -1,0 +1,18 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install dependencies
+RUN pip install --no-cache-dir \
+    flask==3.0.0 \
+    flask-cors==4.0.0 \
+    pyjwt==2.8.0
+
+# Copy application
+COPY mock-api.py /app/
+
+# Expose port
+EXPOSE 8000
+
+# Run application
+CMD ["python", "mock-api.py"]
