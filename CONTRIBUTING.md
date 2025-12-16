@@ -16,8 +16,8 @@ Thank you for considering contributing to the SmartHome IoT Test Automation Fram
 
 1. **Fork and clone the repository**
    ```bash
-   git clone https://github.com/yourusername/smarthome-iot-tests.git
-   cd smarthome-iot-tests
+   git clone https://github.com/mankin3n/MQTTest.git
+   cd MQTTest
    ```
 
 2. **Create a virtual environment**

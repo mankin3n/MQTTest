@@ -14,8 +14,8 @@ Get up and running with the SmartHome IoT Test Framework in 5 minutes.
 
 ```bash
 # Clone repository
-git clone https://github.com/yourusername/smarthome-iot-tests.git
-cd smarthome-iot-tests
+git clone https://github.com/mankin3n/MQTTest.git
+cd MQTTest
 
 # Run automated setup
 make setup
@@ -28,8 +28,8 @@ make smoke
 
 ```bash
 # Clone repository
-git clone https://github.com/yourusername/smarthome-iot-tests.git
-cd smarthome-iot-tests
+git clone https://github.com/mankin3n/MQTTest.git
+cd MQTTest
 
 # Install dependencies
 pip install -r requirements.txt

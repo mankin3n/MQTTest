@@ -1,6 +1,6 @@
 # SmartHome IoT Test Automation Framework
 
-[![CI/CD Pipeline](https://github.com/yourusername/smarthome-iot-tests/workflows/CI/CD%20Pipeline/badge.svg)](https://github.com/yourusername/smarthome-iot-tests/actions)
+[![CI/CD Pipeline](https://github.com/mankin3n/MQTTest/actions/workflows/ci.yml/badge.svg)](https://github.com/mankin3n/MQTTest/actions)
 [![Python Version](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![Robot Framework](https://img.shields.io/badge/Robot%20Framework-7.0-green.svg)](https://robotframework.org/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
@@ -39,8 +39,8 @@ Enterprise-grade test automation framework for IoT platforms with MQTT messaging
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/smarthome-iot-tests.git
-cd smarthome-iot-tests
+git clone https://github.com/mankin3n/MQTTest.git
+cd MQTTest
 
 # Run setup (installs dependencies & generates certificates)
 python3 cli.py setup
