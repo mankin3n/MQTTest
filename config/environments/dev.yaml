@@ -1,0 +1,43 @@
+environment: development
+
+api:
+  base_url: http://localhost:8000
+  timeout: 30
+  retry_attempts: 3
+  retry_delay: 1
+
+mqtt:
+  broker_host: localhost
+  broker_port: 8883
+  broker_port_ws: 9001
+  use_tls: true
+  ca_cert: certs/ca/ca.crt
+  client_cert: certs/clients/test-client.crt
+  client_key: certs/clients/test-client.key
+  keepalive: 60
+  qos: 1
+  timeout: 30
+
+auth:
+  admin_username: admin@smarthome.local
+  admin_password: admin123
+  test_username: testuser@smarthome.local
+  test_password: test123
+  jwt_secret: dev-secret-key-change-in-production
+  token_expiry: 3600
+
+database:
+  host: localhost
+  port: 5432
+  name: smarthome_test
+  user: test_user
+  password: test_pass
+
+logging:
+  level: DEBUG
+  mqtt_traffic: true
+  api_requests: true
+
+performance:
+  max_response_time_ms: 2000
+  max_mqtt_latency_ms: 500

@@ -1,0 +1,65 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv
+
+# Robot Framework
+reports/
+log.html
+report.html
+output.xml
+selenium-screenshot-*.png
+pabot_results/
+.pabotsuitenames
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Certificates (private keys should not be committed in real projects)
+# For demo purposes, we'll commit test certs but in production:
+# certs/**/*.key
+# certs/**/*.csr
+# certs/ca/ca.key
+
+# Environment files
+.env
+*.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+.docker/
+
+# Logs
+*.log
+logs/
