@@ -26,13 +26,9 @@ TC001: Register New Light Device Successfully
     [Documentation]    Verify that a new light device can be registered
     [Tags]    device    light    positive
 
-    Given device data is prepared
     ${device_data}=    Generate Device Data    device_type=light    device_id=${DEVICE_ID}
-
-    When device is registered via API
     ${response}=    POST Request    /api/v1/devices    data=${device_data}    expected_status=201
 
-    Then response should contain device details
     Response Should Contain Field    ${response}    device_id
     Response Field Should Equal    ${response}    device_id    ${DEVICE_ID}
     Response Should Contain Field    ${response}    type
@@ -42,7 +38,7 @@ TC002: Register New Thermostat Device Successfully
     [Documentation]    Verify that a thermostat device can be registered
     [Tags]    device    thermostat    positive
 
-    ${device_id}=    ${device_data}=    Register New Device    device_type=thermostat
+    ${device_id}    ${device_data}=    Register New Device    device_type=thermostat
 
     Should Not Be Empty    ${device_id}
     Dictionary Should Contain Key    ${device_data}    type
@@ -53,7 +49,7 @@ TC003: Get Device Status Returns Correct Information
     [Tags]    device    status    positive
 
     # First register a device
-    ${device_id}=    ${device_data}=    Register New Device    device_type=sensor
+    ${device_id}    ${device_data}=    Register New Device    device_type=sensor
 
     # Get device status
     ${status}=    Get Device Status    ${device_id}
@@ -65,7 +61,7 @@ TC004: Update Device Configuration Successfully
     [Tags]    device    update    positive
 
     # Register device
-    ${device_id}=    ${device_data}=    Register New Device
+    ${device_id}    ${device_data}=    Register New Device
 
     # Update configuration
     ${config}=    Create Dictionary    name=Updated Device Name    enabled=${True}
@@ -78,7 +74,7 @@ TC005: Delete Device Successfully
     [Tags]    device    delete    positive
 
     # Register device
-    ${device_id}=    ${device_data}=    Register New Device
+    ${device_id}    ${device_data}=    Register New Device
 
     # Delete device
     Delete Device    ${device_id}
@@ -91,7 +87,7 @@ TC006: Register Device Without Authentication Fails
 
     ${device_data}=    Generate Device Data
     ${status}    ${response}=    Run Keyword And Ignore Error
-    ...    POST Request    /api/v1/devices    data=${device_data}
+    ...    POST Request    /api/v1/devices    data=${device_data}    expected_status=201
 
     Should Be Equal    ${status}    FAIL
     Should Contain    ${response}    401
@@ -103,11 +99,8 @@ TC007: Get Non-Existent Device Returns 404
     [Documentation]    Verify getting non-existent device returns 404
     [Tags]    device    negative
 
-    ${status}    ${response}=    Run Keyword And Ignore Error
-    ...    GET Request    /api/v1/devices/non-existent-device    expected_status=200
-
-    Should Be Equal    ${status}    FAIL
-    Should Contain    ${response}    404
+    ${response}=    GET Request    /api/v1/devices/non-existent-device    expected_status=404
+    Response Should Contain Field    ${response}    error
 
 TC008: Register Device With Invalid Data Fails
     [Documentation]    Verify registration fails with invalid data
@@ -115,7 +108,7 @@ TC008: Register Device With Invalid Data Fails
 
     ${invalid_data}=    Create Dictionary    invalid_field=value
     ${status}    ${response}=    Run Keyword And Ignore Error
-    ...    POST Request    /api/v1/devices    data=${invalid_data}
+    ...    POST Request    /api/v1/devices    data=${invalid_data}    expected_status=201
 
     Should Be Equal    ${status}    FAIL
 

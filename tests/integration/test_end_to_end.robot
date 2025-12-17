@@ -23,22 +23,17 @@ TC031: Complete Device Lifecycle
     [Documentation]    Test full device lifecycle from registration to deletion
     [Tags]    device    lifecycle    smoke
 
-    Given device is registered
-    ${device_id}=    ${device_data}=    Register New Device    device_type=light
+    ${device_id}    ${device_data}=    Register New Device    device_type=light
 
-    When device publishes telemetry
     Subscribe To Device Telemetry    ${device_id}
     ${telemetry}=    Publish Device Telemetry    ${device_id}    light
 
-    Then telemetry should be received
     ${message}=    Wait For Message    home/${device_id}/telemetry    timeout=10
     Verify Device Telemetry Message    ${message}    ${device_id}
 
-    And device status can be queried
     ${status}=    Get Device Status    ${device_id}
     Should Not Be Empty    ${status}
 
-    And device can be deleted
     Delete Device    ${device_id}
 
 TC032: Device Command And Response Flow
@@ -46,7 +41,7 @@ TC032: Device Command And Response Flow
     [Tags]    device    command    positive
 
     # Register device
-    ${device_id}=    ${device_data}=    Register New Device    device_type=light
+    ${device_id}    ${device_data}=    Register New Device    device_type=light
 
     # Subscribe to command and status topics
     Subscribe To Topic    home/${device_id}/command    qos=1
@@ -75,11 +70,11 @@ TC033: Automation Rule End-to-End
     [Tags]    automation    e2e    positive
 
     # Register trigger and action devices
-    ${trigger_device}=    ${trigger_data}=    Register New Device    device_type=sensor
-    ${action_device}=    ${action_data}=    Register New Device    device_type=light
+    ${trigger_device}    ${trigger_data}=    Register New Device    device_type=sensor
+    ${action_device}    ${action_data}=    Register New Device    device_type=light
 
     # Create automation rule
-    ${rule_id}=    ${rule_data}=    Create Automation Rule    ${trigger_device}    ${action_device}
+    ${rule_id}    ${rule_data}=    Create Automation Rule    ${trigger_device}    ${action_device}
 
     # Subscribe to automation events
     ${events_topic}=    Subscribe To Automation Events
@@ -201,9 +196,9 @@ TC038: Multiple Automation Rules Execution
     ${rule_count}=    Set Variable    3
 
     FOR    ${i}    IN RANGE    ${rule_count}
-        ${trigger}=    ${t_data}=    Register New Device    device_type=sensor
-        ${action}=    ${a_data}=    Register New Device    device_type=light
-        ${rule_id}=    ${rule}=    Create Automation Rule    ${trigger}    ${action}
+        ${trigger}    ${t_data}=    Register New Device    device_type=sensor
+        ${action}    ${a_data}=    Register New Device    device_type=light
+        ${rule_id}    ${rule}=    Create Automation Rule    ${trigger}    ${action}
         Log    Created rule ${rule_id}
     END
 
@@ -211,7 +206,7 @@ TC039: Device Status Monitoring Over Time
     [Documentation]    Monitor device status updates over time
     [Tags]    monitoring    telemetry
 
-    ${device_id}=    ${device_data}=    Register New Device    device_type=thermostat
+    ${device_id}    ${device_data}=    Register New Device    device_type=thermostat
 
     Subscribe To Device Telemetry    ${device_id}
 
@@ -237,6 +232,7 @@ TC040: System Health Check
     # Verify can publish and receive messages
     ${test_topic}=    Set Variable    home/healthcheck/test
     Subscribe To Topic    ${test_topic}    qos=1
+    Sleep    100ms    # Allow subscription to be fully established
     Publish Message    ${test_topic}    {"health": "ok"}    qos=1
     ${message}=    Wait For Message    ${test_topic}    timeout=5
 
