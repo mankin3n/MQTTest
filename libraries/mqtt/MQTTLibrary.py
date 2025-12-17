@@ -293,7 +293,7 @@ class MQTTLibrary:
         self,
         topic: str,
         timeout: int = 10,
-        clear_queue: bool = True
+        clear_queue: bool = False
     ) -> Dict[str, Any]:
         """
         Wait for a message on a subscribed topic.
@@ -301,7 +301,7 @@ class MQTTLibrary:
         Args:
             topic: MQTT topic to wait for messages on
             timeout: Maximum time to wait in seconds
-            clear_queue: Whether to clear the message queue before waiting
+            clear_queue: Whether to clear the message queue before waiting (default: False)
 
         Returns:
             Dictionary containing message details
