@@ -96,6 +96,7 @@ jobs:
 
       - name: Start services
         run: |
+          export JWT_SECRET=ci-secret-key
           docker compose up -d mosquitto mock-api
           sleep 10
 
@@ -149,6 +150,7 @@ jobs:
 
       - name: Start services
         run: |
+          export JWT_SECRET=ci-secret-key
           docker compose up -d mosquitto mock-api
           sleep 10
 
@@ -198,6 +200,7 @@ jobs:
 
       - name: Start services
         run: |
+          export JWT_SECRET=ci-secret-key
           docker compose up -d mosquitto mock-api
           sleep 10
 
@@ -247,6 +250,7 @@ jobs:
 
       - name: Start services
         run: |
+          export JWT_SECRET=ci-secret-key
           docker compose up -d mosquitto mock-api
           sleep 10
 
@@ -296,6 +300,7 @@ jobs:
 
       - name: Start services
         run: |
+          export JWT_SECRET=ci-secret-key
           docker compose up -d mosquitto mock-api
           sleep 10
 

@@ -21,10 +21,10 @@ TC021: Admin User Can Access Protected Endpoints
 
     # Access protected endpoint
     ${device_data}=    Generate Device Data
-    ${response}=    POST Request    /api/v1/devices    data=${device_data}
+    ${response}=    POST Request    /api/v1/devices    data=${device_data}    expected_status=201
 
     # Verify request succeeds
-    Response Status Should Be    201
+    Should Be Equal As Integers    ${response}[status_code]    201
 
 TC022: Regular User Has Limited Access
     [Documentation]    Verify regular users have restricted access
@@ -33,13 +33,11 @@ TC022: Regular User Has Limited Access
     # Authenticate as regular user
     ${token}=    Authenticate As User
 
-    # Access admin-only endpoint
-    ${status}    ${response}=    Run Keyword And Ignore Error
-    ...    DELETE Request    /api/v1/devices/any-device    expected_status=200
+    # Access admin-only endpoint (should be forbidden)
+    ${response}=    DELETE Request    /api/v1/devices/any-device
 
     # Verify request is forbidden
-    Should Be Equal    ${status}    FAIL
-    Should Contain    ${response}    403
+    Should Be Equal As Integers    ${response}[status_code]    403
 
 TC023: Unauthenticated Requests Are Rejected
     [Documentation]    Verify requests without auth token are rejected
@@ -50,12 +48,10 @@ TC023: Unauthenticated Requests Are Rejected
 
     # Access protected endpoint
     ${device_data}=    Generate Device Data
-    ${status}    ${response}=    Run Keyword And Ignore Error
-    ...    POST Request    /api/v1/devices    data=${device_data}
+    ${response}=    POST Request    /api/v1/devices    data=${device_data}
 
     # Verify request is unauthorized
-    Should Be Equal    ${status}    FAIL
-    Should Contain    ${response}    401
+    Should Be Equal As Integers    ${response}[status_code]    401
 
     # Restore auth for cleanup
     Authenticate As Admin
@@ -70,16 +66,16 @@ TC024: Expired JWT Token Is Rejected
     ...    username=testuser
     ...    role=user
     ...    expiry_seconds=-1
+    ...    secret_key=${auth.jwt_secret}
 
     Set Authorization Token    ${expired_token}
 
     # Access protected endpoint
     ${device_data}=    Generate Device Data
-    ${status}    ${response}=    Run Keyword And Ignore Error
-    ...    POST Request    /api/v1/devices    data=${device_data}
+    ${response}=    POST Request    /api/v1/devices    data=${device_data}
 
-    # Verify request fails
-    Should Be Equal    ${status}    FAIL
+    # Verify request fails with 401
+    Should Be Equal As Integers    ${response}[status_code]    401
 
     # Restore auth
     Authenticate As Admin
@@ -93,11 +89,10 @@ TC025: Invalid JWT Token Is Rejected
 
     # Access protected endpoint
     ${device_data}=    Generate Device Data
-    ${status}    ${response}=    Run Keyword And Ignore Error
-    ...    POST Request    /api/v1/devices    data=${device_data}
+    ${response}=    POST Request    /api/v1/devices    data=${device_data}
 
-    # Verify request fails
-    Should Be Equal    ${status}    FAIL
+    # Verify request fails with 401
+    Should Be Equal As Integers    ${response}[status_code]    401
 
     # Restore auth
     Authenticate As Admin
@@ -171,10 +166,10 @@ TC030: Multiple Failed Auth Attempts Are Logged
 
     FOR    ${i}    IN RANGE    3
         ${device_data}=    Generate Device Data
-        ${status}    ${response}=    Run Keyword And Ignore Error
-        ...    POST Request    /api/v1/devices    data=${device_data}
+        ${response}=    POST Request    /api/v1/devices    data=${device_data}
 
-        Should Be Equal    ${status}    FAIL
+        # Verify each request is unauthorized
+        Should Be Equal As Integers    ${response}[status_code]    401
     END
 
     # Restore auth
