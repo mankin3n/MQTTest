@@ -35,6 +35,29 @@ Enterprise-grade test automation framework for IoT platforms with MQTT messaging
 - Docker & Docker Compose
 - Git
 
+### ⚡ Enhanced CLI (Recommended)
+
+We now have a modern, interactive CLI with beautiful terminal UI:
+
+```bash
+# Interactive mode - just run and select from menu
+python3 cli_enhanced.py
+
+# Or use direct commands
+python3 cli_enhanced.py setup
+python3 cli_enhanced.py run --suite smoke
+python3 cli_enhanced.py services
+```
+
+**Features:**
+- 🎨 Beautiful interactive menus
+- 📊 Rich progress indicators
+- 🔍 Tree view of test structure
+- ✨ One-click report opening
+- 🚀 Quick start wizard
+
+See [CLI_README.md](CLI_README.md) for full documentation.
+
 ### Installation
 
 ```bash
@@ -43,10 +66,13 @@ git clone https://github.com/mankin3n/MQTTest.git
 cd MQTTest
 
 # Run setup (installs dependencies & generates certificates)
+python3 cli_enhanced.py setup
+# or use the original CLI:
 python3 cli.py setup
 
 # Start services (MQTT broker & Mock API)
-python3 cli.py services
+python3 cli_enhanced.py services
+# or: python3 cli.py services
 
 # Run smoke tests
 python3 cli.py run --suite smoke
