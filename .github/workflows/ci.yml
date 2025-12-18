@@ -58,7 +58,7 @@ jobs:
         run: python scripts/generate_certs.py
 
       - name: Upload certificates artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: test-certificates
           path: certs/
@@ -74,7 +74,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Download certificates
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: test-certificates
           path: certs/
@@ -108,7 +108,7 @@ jobs:
 
       - name: Upload test reports
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: api-test-reports
           path: reports/
@@ -127,7 +127,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Download certificates
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: test-certificates
           path: certs/
@@ -157,7 +157,7 @@ jobs:
 
       - name: Upload test reports
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: mqtt-test-reports
           path: reports/
@@ -176,7 +176,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Download certificates
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: test-certificates
           path: certs/
@@ -206,7 +206,7 @@ jobs:
 
       - name: Upload test reports
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: security-test-reports
           path: reports/
@@ -225,7 +225,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Download certificates
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: test-certificates
           path: certs/
@@ -255,7 +255,7 @@ jobs:
 
       - name: Upload test reports
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: integration-test-reports
           path: reports/
@@ -274,7 +274,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Download certificates
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: test-certificates
           path: certs/
@@ -304,7 +304,7 @@ jobs:
 
       - name: Upload test reports
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: smoke-test-reports
           path: reports/
@@ -324,7 +324,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Download all test reports
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           path: all-reports/
 
@@ -334,7 +334,7 @@ jobs:
           find all-reports -name "output.xml" -exec cp {} merged-reports/ \;
 
       - name: Upload merged reports
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: merged-test-reports
           path: merged-reports/
