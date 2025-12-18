@@ -16,28 +16,28 @@ TC021: Admin User Can Access Protected Endpoints
     [Documentation]    Verify admin users have full access
     [Tags]    auth    admin    positive
 
-    Given user is authenticated as admin
+    # Authenticate as admin user
     ${token}=    Authenticate As Admin
 
-    When accessing protected endpoint
+    # Access protected endpoint
     ${device_data}=    Generate Device Data
     ${response}=    POST Request    /api/v1/devices    data=${device_data}
 
-    Then request should succeed
+    # Verify request succeeds
     Response Status Should Be    201
 
 TC022: Regular User Has Limited Access
     [Documentation]    Verify regular users have restricted access
     [Tags]    auth    user    positive
 
-    Given user is authenticated as regular user
+    # Authenticate as regular user
     ${token}=    Authenticate As User
 
-    When accessing admin-only endpoint
+    # Access admin-only endpoint
     ${status}    ${response}=    Run Keyword And Ignore Error
     ...    DELETE Request    /api/v1/devices/any-device    expected_status=200
 
-    Then request should be forbidden
+    # Verify request is forbidden
     Should Be Equal    ${status}    FAIL
     Should Contain    ${response}    403
 
@@ -45,15 +45,15 @@ TC023: Unauthenticated Requests Are Rejected
     [Documentation]    Verify requests without auth token are rejected
     [Tags]    auth    negative
 
-    Given no authentication token is set
+    # Clear authentication token
     Clear Authorization Token
 
-    When accessing protected endpoint
+    # Access protected endpoint
     ${device_data}=    Generate Device Data
     ${status}    ${response}=    Run Keyword And Ignore Error
     ...    POST Request    /api/v1/devices    data=${device_data}
 
-    Then request should be unauthorized
+    # Verify request is unauthorized
     Should Be Equal    ${status}    FAIL
     Should Contain    ${response}    401
 
@@ -64,7 +64,7 @@ TC024: Expired JWT Token Is Rejected
     [Documentation]    Verify expired tokens are not accepted
     [Tags]    auth    jwt    negative
 
-    Given an expired JWT token
+    # Generate an expired JWT token
     ${expired_token}=    Generate JWT Token
     ...    user_id=test123
     ...    username=testuser
@@ -73,12 +73,12 @@ TC024: Expired JWT Token Is Rejected
 
     Set Authorization Token    ${expired_token}
 
-    When accessing protected endpoint
+    # Access protected endpoint
     ${device_data}=    Generate Device Data
     ${status}    ${response}=    Run Keyword And Ignore Error
     ...    POST Request    /api/v1/devices    data=${device_data}
 
-    Then request should fail
+    # Verify request fails
     Should Be Equal    ${status}    FAIL
 
     # Restore auth
@@ -88,15 +88,15 @@ TC025: Invalid JWT Token Is Rejected
     [Documentation]    Verify invalid tokens are not accepted
     [Tags]    auth    jwt    negative
 
-    Given an invalid JWT token
+    # Set an invalid JWT token
     Set Authorization Token    invalid.jwt.token.here
 
-    When accessing protected endpoint
+    # Access protected endpoint
     ${device_data}=    Generate Device Data
     ${status}    ${response}=    Run Keyword And Ignore Error
     ...    POST Request    /api/v1/devices    data=${device_data}
 
-    Then request should fail
+    # Verify request fails
     Should Be Equal    ${status}    FAIL
 
     # Restore auth

@@ -1,13 +1,13 @@
 environment: ci
 
 api:
-  base_url: http://mock-api:8000
+  base_url: http://localhost:8000
   timeout: 30
   retry_attempts: 3
   retry_delay: 1
 
 mqtt:
-  broker_host: mosquitto
+  broker_host: localhost
   broker_port: 8883
   broker_port_ws: 9001
   use_tls: true
