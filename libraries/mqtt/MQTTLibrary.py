@@ -2,6 +2,7 @@
 Custom Robot Framework library for MQTT operations with certificate-based authentication.
 Supports publish/subscribe, QoS levels, retained messages, and message queue handling.
 """
+
 import json
 import time
 import queue
@@ -21,8 +22,8 @@ class MQTTLibrary:
     and validating messages with proper QoS handling and certificate authentication.
     """
 
-    ROBOT_LIBRARY_SCOPE = 'GLOBAL'
-    ROBOT_LIBRARY_VERSION = '1.0.0'
+    ROBOT_LIBRARY_SCOPE = "GLOBAL"
+    ROBOT_LIBRARY_VERSION = "1.0.0"
 
     def __init__(self):
         self.client: Optional[mqtt.Client] = None
@@ -31,17 +32,17 @@ class MQTTLibrary:
         self.connection_status = False
         self.lock = threading.Lock()
         self.metrics = {
-            'messages_published': 0,
-            'messages_received': 0,
-            'connection_time': None,
-            'last_message_time': None
+            "messages_published": 0,
+            "messages_received": 0,
+            "connection_time": None,
+            "last_message_time": None,
         }
 
     def _on_connect(self, client, userdata, flags, rc):
         """Callback for when client connects to broker."""
         if rc == 0:
             self.connection_status = True
-            self.metrics['connection_time'] = datetime.now()
+            self.metrics["connection_time"] = datetime.now()
             logger.info(f"Connected to MQTT broker with result code: {rc}")
 
             # Resubscribe to topics on reconnect
@@ -56,7 +57,7 @@ class MQTTLibrary:
                 2: "Connection refused - invalid client identifier",
                 3: "Connection refused - server unavailable",
                 4: "Connection refused - bad username or password",
-                5: "Connection refused - not authorized"
+                5: "Connection refused - not authorized",
             }
             error_msg = error_messages.get(rc, f"Unknown error code: {rc}")
             logger.error(f"Failed to connect to MQTT broker: {error_msg}")
@@ -72,12 +73,12 @@ class MQTTLibrary:
     def _on_message(self, client, userdata, message):
         """Callback for when a message is received."""
         topic = message.topic
-        payload = message.payload.decode('utf-8')
+        payload = message.payload.decode("utf-8")
         qos = message.qos
         retained = message.retain
 
-        self.metrics['messages_received'] += 1
-        self.metrics['last_message_time'] = datetime.now()
+        self.metrics["messages_received"] += 1
+        self.metrics["last_message_time"] = datetime.now()
 
         logger.info(
             f"Message received - Topic: {topic}, QoS: {qos}, "
@@ -88,13 +89,15 @@ class MQTTLibrary:
         with self.lock:
             if topic not in self.message_queues:
                 self.message_queues[topic] = queue.Queue()
-            self.message_queues[topic].put({
-                'topic': topic,
-                'payload': payload,
-                'qos': qos,
-                'retained': retained,
-                'timestamp': datetime.now().isoformat()
-            })
+            self.message_queues[topic].put(
+                {
+                    "topic": topic,
+                    "payload": payload,
+                    "qos": qos,
+                    "retained": retained,
+                    "timestamp": datetime.now().isoformat(),
+                }
+            )
 
     def _on_publish(self, client, userdata, mid):
         """Callback for when a message is published."""
@@ -112,7 +115,7 @@ class MQTTLibrary:
         client_cert: str = None,
         client_key: str = None,
         keepalive: int = 60,
-        clean_session: bool = True
+        clean_session: bool = True,
     ):
         """
         Connect to MQTT broker with optional mTLS authentication.
@@ -151,15 +154,13 @@ class MQTTLibrary:
         # Configure authentication
         if username and password:
             self.client.username_pw_set(username, password)
-            logger.info(f"Using username/password authentication")
+            logger.info("Using username/password authentication")
 
         # Configure TLS/mTLS
         if ca_cert:
             logger.info(f"Configuring TLS with CA cert: {ca_cert}")
             self.client.tls_set(
-                ca_certs=ca_cert,
-                certfile=client_cert,
-                keyfile=client_key
+                ca_certs=ca_cert, certfile=client_cert, keyfile=client_key
             )
 
         # Connect to broker
@@ -174,7 +175,9 @@ class MQTTLibrary:
                 time.sleep(0.1)
 
             if not self.connection_status:
-                raise ConnectionError(f"Failed to connect to broker within {timeout} seconds")
+                raise ConnectionError(
+                    f"Failed to connect to broker within {timeout} seconds"
+                )
 
             logger.info("Successfully connected to MQTT broker")
 
@@ -252,11 +255,7 @@ class MQTTLibrary:
 
     @keyword("Publish Message")
     def publish_message(
-        self,
-        topic: str,
-        payload: str,
-        qos: int = 1,
-        retain: bool = False
+        self, topic: str, payload: str, qos: int = 1, retain: bool = False
     ):
         """
         Publish a message to an MQTT topic.
@@ -279,7 +278,7 @@ class MQTTLibrary:
         result = self.client.publish(topic, payload, int(qos), retain)
 
         if result.rc == mqtt.MQTT_ERR_SUCCESS:
-            self.metrics['messages_published'] += 1
+            self.metrics["messages_published"] += 1
             logger.info(f"Message published successfully (mid: {result.mid})")
 
             # Wait for publish completion if QoS > 0
@@ -290,10 +289,7 @@ class MQTTLibrary:
 
     @keyword("Wait For Message")
     def wait_for_message(
-        self,
-        topic: str,
-        timeout: int = 10,
-        clear_queue: bool = False
+        self, topic: str, timeout: int = 10, clear_queue: bool = False
     ) -> Dict[str, Any]:
         """
         Wait for a message on a subscribed topic.
@@ -331,7 +327,9 @@ class MQTTLibrary:
             logger.info(f"Received message: {message}")
             return message
         except queue.Empty:
-            raise TimeoutError(f"No message received on topic '{topic}' within {timeout} seconds")
+            raise TimeoutError(
+                f"No message received on topic '{topic}' within {timeout} seconds"
+            )
 
     @keyword("Get All Messages")
     def get_all_messages(self, topic: str) -> List[Dict[str, Any]]:
@@ -393,7 +391,7 @@ class MQTTLibrary:
         Example:
             | Verify Message Payload | ${message} | {"status": "online"} |
         """
-        actual_payload = message.get('payload', '')
+        actual_payload = message.get("payload", "")
         if actual_payload != expected_payload:
             raise AssertionError(
                 f"Payload mismatch.\nExpected: {expected_payload}\nActual: {actual_payload}"
@@ -402,10 +400,7 @@ class MQTTLibrary:
 
     @keyword("Verify JSON Message Field")
     def verify_json_message_field(
-        self,
-        message: Dict[str, Any],
-        field_path: str,
-        expected_value: Any
+        self, message: Dict[str, Any], field_path: str, expected_value: Any
     ):
         """
         Verify a specific field in a JSON message payload.
@@ -418,7 +413,7 @@ class MQTTLibrary:
         Example:
             | Verify JSON Message Field | ${message} | device.temperature | 22.5 |
         """
-        payload = message.get('payload', '{}')
+        payload = message.get("payload", "{}")
 
         try:
             data = json.loads(payload)
@@ -426,7 +421,7 @@ class MQTTLibrary:
             raise ValueError(f"Invalid JSON payload: {payload}")
 
         # Navigate through nested fields
-        fields = field_path.split('.')
+        fields = field_path.split(".")
         value = data
         for field in fields:
             if isinstance(value, dict) and field in value:

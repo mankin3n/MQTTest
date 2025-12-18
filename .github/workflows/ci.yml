@@ -7,6 +7,11 @@ on:
     branches: [ main, develop ]
   workflow_dispatch:
 
+permissions:
+  contents: read
+  checks: write
+  pull-requests: write
+
 env:
   PYTHON_VERSION: '3.11'
   TEST_ENV: ci
@@ -91,7 +96,7 @@ jobs:
 
       - name: Start services
         run: |
-          docker-compose up -d mosquitto mock-api
+          docker compose up -d mosquitto mock-api
           sleep 10
 
       - name: Wait for services
@@ -115,7 +120,7 @@ jobs:
 
       - name: Stop services
         if: always()
-        run: docker-compose down
+        run: docker compose down
 
   test-mqtt:
     name: MQTT Tests
@@ -144,7 +149,7 @@ jobs:
 
       - name: Start services
         run: |
-          docker-compose up -d mosquitto mock-api
+          docker compose up -d mosquitto mock-api
           sleep 10
 
       - name: Run MQTT tests
@@ -164,7 +169,7 @@ jobs:
 
       - name: Stop services
         if: always()
-        run: docker-compose down
+        run: docker compose down
 
   test-security:
     name: Security Tests
@@ -193,7 +198,7 @@ jobs:
 
       - name: Start services
         run: |
-          docker-compose up -d mosquitto mock-api
+          docker compose up -d mosquitto mock-api
           sleep 10
 
       - name: Run security tests
@@ -213,7 +218,7 @@ jobs:
 
       - name: Stop services
         if: always()
-        run: docker-compose down
+        run: docker compose down
 
   test-integration:
     name: Integration Tests
@@ -242,7 +247,7 @@ jobs:
 
       - name: Start services
         run: |
-          docker-compose up -d mosquitto mock-api
+          docker compose up -d mosquitto mock-api
           sleep 10
 
       - name: Run integration tests
@@ -262,7 +267,7 @@ jobs:
 
       - name: Stop services
         if: always()
-        run: docker-compose down
+        run: docker compose down
 
   test-smoke:
     name: Smoke Tests
@@ -291,7 +296,7 @@ jobs:
 
       - name: Start services
         run: |
-          docker-compose up -d mosquitto mock-api
+          docker compose up -d mosquitto mock-api
           sleep 10
 
       - name: Run smoke tests
@@ -311,7 +316,7 @@ jobs:
 
       - name: Stop services
         if: always()
-        run: docker-compose down
+        run: docker compose down
 
   generate-report:
     name: Generate Test Report
@@ -331,7 +336,8 @@ jobs:
       - name: Merge test results
         run: |
           mkdir -p merged-reports
-          find all-reports -name "output.xml" -exec cp {} merged-reports/ \;
+          find all-reports -name "output.xml" -exec cp {} merged-reports/ \; || true
+          ls -R all-reports || echo "No test reports found"
 
       - name: Upload merged reports
         uses: actions/upload-artifact@v4
@@ -342,6 +348,7 @@ jobs:
       - name: Publish test results
         uses: EnricoMi/publish-unit-test-result-action@v2
         if: always()
+        continue-on-error: true
         with:
           files: all-reports/**/output.xml
           check_name: Test Results

@@ -2,6 +2,7 @@
 Custom Robot Framework library for REST API operations with retry logic and JWT authentication.
 Supports device management, user authentication, and automation rules testing.
 """
+
 import json
 import time
 import jwt
@@ -21,8 +22,8 @@ class APILibrary:
     Provides keywords for HTTP operations, authentication, and response validation.
     """
 
-    ROBOT_LIBRARY_SCOPE = 'GLOBAL'
-    ROBOT_LIBRARY_VERSION = '1.0.0'
+    ROBOT_LIBRARY_SCOPE = "GLOBAL"
+    ROBOT_LIBRARY_VERSION = "1.0.0"
 
     def __init__(self):
         self.base_url: Optional[str] = None
@@ -30,17 +31,17 @@ class APILibrary:
         self.auth_token: Optional[str] = None
         self.last_response: Optional[requests.Response] = None
         self.metrics = {
-            'requests_sent': 0,
-            'requests_failed': 0,
-            'total_response_time': 0,
-            'last_request_time': None
+            "requests_sent": 0,
+            "requests_failed": 0,
+            "total_response_time": 0,
+            "last_request_time": None,
         }
 
     def _create_session_with_retry(
         self,
         retry_attempts: int = 3,
         backoff_factor: float = 0.3,
-        status_forcelist: tuple = (500, 502, 503, 504)
+        status_forcelist: tuple = (500, 502, 503, 504),
     ) -> requests.Session:
         """Create a requests session with retry logic."""
         session = requests.Session()
@@ -49,7 +50,15 @@ class APILibrary:
             total=retry_attempts,
             backoff_factor=backoff_factor,
             status_forcelist=status_forcelist,
-            allowed_methods=["HEAD", "GET", "PUT", "DELETE", "OPTIONS", "TRACE", "POST"]
+            allowed_methods=[
+                "HEAD",
+                "GET",
+                "PUT",
+                "DELETE",
+                "OPTIONS",
+                "TRACE",
+                "POST",
+            ],
         )
 
         adapter = HTTPAdapter(max_retries=retry_strategy)
@@ -64,7 +73,7 @@ class APILibrary:
         base_url: str,
         timeout: int = 30,
         retry_attempts: int = 3,
-        verify_ssl: bool = True
+        verify_ssl: bool = True,
     ):
         """
         Initialize the API client with base URL and configuration.
@@ -78,16 +87,18 @@ class APILibrary:
         Example:
             | Initialize API Client | http://localhost:8000 | timeout=30 |
         """
-        self.base_url = base_url.rstrip('/')
+        self.base_url = base_url.rstrip("/")
         self.session = self._create_session_with_retry(retry_attempts=retry_attempts)
         self.session.verify = verify_ssl
 
         # Set default headers
-        self.session.headers.update({
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'User-Agent': 'RobotFramework-APILibrary/1.0'
-        })
+        self.session.headers.update(
+            {
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+                "User-Agent": "RobotFramework-APILibrary/1.0",
+            }
+        )
 
         logger.info(f"API client initialized with base URL: {self.base_url}")
 
@@ -103,9 +114,7 @@ class APILibrary:
             | Set Authorization Token | ${token} |
         """
         self.auth_token = token
-        self.session.headers.update({
-            'Authorization': f'Bearer {token}'
-        })
+        self.session.headers.update({"Authorization": f"Bearer {token}"})
         logger.info("Authorization token set")
 
     @keyword("Clear Authorization Token")
@@ -117,8 +126,8 @@ class APILibrary:
             | Clear Authorization Token |
         """
         self.auth_token = None
-        if 'Authorization' in self.session.headers:
-            del self.session.headers['Authorization']
+        if "Authorization" in self.session.headers:
+            del self.session.headers["Authorization"]
         logger.info("Authorization token cleared")
 
     @keyword("Generate JWT Token")
@@ -128,7 +137,7 @@ class APILibrary:
         username: str,
         role: str = "user",
         secret_key: str = "dev-secret-key",
-        expiry_seconds: int = 3600
+        expiry_seconds: int = 3600,
     ) -> str:
         """
         Generate a JWT token for testing.
@@ -147,14 +156,14 @@ class APILibrary:
             | ${token}= | Generate JWT Token | user123 | testuser | user |
         """
         payload = {
-            'user_id': user_id,
-            'username': username,
-            'role': role,
-            'exp': datetime.utcnow() + timedelta(seconds=int(expiry_seconds)),
-            'iat': datetime.utcnow()
+            "user_id": user_id,
+            "username": username,
+            "role": role,
+            "exp": datetime.utcnow() + timedelta(seconds=int(expiry_seconds)),
+            "iat": datetime.utcnow(),
         }
 
-        token = jwt.encode(payload, secret_key, algorithm='HS256')
+        token = jwt.encode(payload, secret_key, algorithm="HS256")
         logger.info(f"Generated JWT token for user: {username} (role: {role})")
 
         return token
@@ -165,7 +174,7 @@ class APILibrary:
         endpoint: str,
         data: Any = None,
         timeout: int = 30,
-        expected_status: int = None
+        expected_status: int = None,
     ) -> Dict[str, Any]:
         """
         Send POST request to API endpoint.
@@ -183,7 +192,13 @@ class APILibrary:
             | ${response}= | POST Request | /api/v1/devices |
             | ...  | {"name": "Light 1", "type": "light"} |
         """
-        return self._send_request('POST', endpoint, data=data, timeout=timeout, expected_status=expected_status)
+        return self._send_request(
+            "POST",
+            endpoint,
+            data=data,
+            timeout=timeout,
+            expected_status=expected_status,
+        )
 
     @keyword("GET Request")
     def get_request(
@@ -191,7 +206,7 @@ class APILibrary:
         endpoint: str,
         params: Dict[str, Any] = None,
         timeout: int = 30,
-        expected_status: int = None
+        expected_status: int = None,
     ) -> Dict[str, Any]:
         """
         Send GET request to API endpoint.
@@ -208,7 +223,13 @@ class APILibrary:
         Example:
             | ${response}= | GET Request | /api/v1/devices/device001 |
         """
-        return self._send_request('GET', endpoint, params=params, timeout=timeout, expected_status=expected_status)
+        return self._send_request(
+            "GET",
+            endpoint,
+            params=params,
+            timeout=timeout,
+            expected_status=expected_status,
+        )
 
     @keyword("PUT Request")
     def put_request(
@@ -216,7 +237,7 @@ class APILibrary:
         endpoint: str,
         data: Any = None,
         timeout: int = 30,
-        expected_status: int = None
+        expected_status: int = None,
     ) -> Dict[str, Any]:
         """
         Send PUT request to API endpoint.
@@ -234,14 +255,13 @@ class APILibrary:
             | ${response}= | PUT Request | /api/v1/devices/device001 |
             | ...  | {"status": "active"} |
         """
-        return self._send_request('PUT', endpoint, data=data, timeout=timeout, expected_status=expected_status)
+        return self._send_request(
+            "PUT", endpoint, data=data, timeout=timeout, expected_status=expected_status
+        )
 
     @keyword("DELETE Request")
     def delete_request(
-        self,
-        endpoint: str,
-        timeout: int = 30,
-        expected_status: int = None
+        self, endpoint: str, timeout: int = 30, expected_status: int = None
     ) -> Dict[str, Any]:
         """
         Send DELETE request to API endpoint.
@@ -257,7 +277,9 @@ class APILibrary:
         Example:
             | ${response}= | DELETE Request | /api/v1/devices/device001 |
         """
-        return self._send_request('DELETE', endpoint, timeout=timeout, expected_status=expected_status)
+        return self._send_request(
+            "DELETE", endpoint, timeout=timeout, expected_status=expected_status
+        )
 
     @keyword("PATCH Request")
     def patch_request(
@@ -265,7 +287,7 @@ class APILibrary:
         endpoint: str,
         data: Any = None,
         timeout: int = 30,
-        expected_status: int = None
+        expected_status: int = None,
     ) -> Dict[str, Any]:
         """
         Send PATCH request to API endpoint.
@@ -283,7 +305,13 @@ class APILibrary:
             | ${response}= | PATCH Request | /api/v1/devices/device001 |
             | ...  | {"enabled": true} |
         """
-        return self._send_request('PATCH', endpoint, data=data, timeout=timeout, expected_status=expected_status)
+        return self._send_request(
+            "PATCH",
+            endpoint,
+            data=data,
+            timeout=timeout,
+            expected_status=expected_status,
+        )
 
     def _send_request(
         self,
@@ -292,11 +320,13 @@ class APILibrary:
         data: Any = None,
         params: Dict[str, Any] = None,
         timeout: int = 30,
-        expected_status: int = None
+        expected_status: int = None,
     ) -> Dict[str, Any]:
         """Internal method to send HTTP requests."""
         if not self.session:
-            raise RuntimeError("API client not initialized. Call 'Initialize API Client' first.")
+            raise RuntimeError(
+                "API client not initialized. Call 'Initialize API Client' first."
+            )
 
         url = f"{self.base_url}{endpoint}"
 
@@ -318,28 +348,22 @@ class APILibrary:
 
         try:
             response = self.session.request(
-                method=method,
-                url=url,
-                json=json_data,
-                params=params,
-                timeout=timeout
+                method=method, url=url, json=json_data, params=params, timeout=timeout
             )
 
             elapsed_time = (time.time() - start_time) * 1000  # Convert to ms
             self.last_response = response
 
             # Update metrics
-            self.metrics['requests_sent'] += 1
-            self.metrics['total_response_time'] += elapsed_time
-            self.metrics['last_request_time'] = datetime.now().isoformat()
+            self.metrics["requests_sent"] += 1
+            self.metrics["total_response_time"] += elapsed_time
+            self.metrics["last_request_time"] = datetime.now().isoformat()
 
-            logger.info(
-                f"Response: {response.status_code} ({elapsed_time:.0f}ms)"
-            )
+            logger.info(f"Response: {response.status_code} ({elapsed_time:.0f}ms)")
 
             # Check expected status if provided
             if expected_status is not None and response.status_code != expected_status:
-                self.metrics['requests_failed'] += 1
+                self.metrics["requests_failed"] += 1
                 raise AssertionError(
                     f"Expected status {expected_status}, got {response.status_code}. "
                     f"Response: {response.text}"
@@ -349,19 +373,19 @@ class APILibrary:
             try:
                 response_data = response.json() if response.text else {}
             except json.JSONDecodeError:
-                response_data = {'text': response.text}
+                response_data = {"text": response.text}
 
             logger.debug(f"Response body: {json.dumps(response_data, indent=2)}")
 
             return {
-                'status_code': response.status_code,
-                'data': response_data,
-                'headers': dict(response.headers),
-                'response_time_ms': elapsed_time
+                "status_code": response.status_code,
+                "data": response_data,
+                "headers": dict(response.headers),
+                "response_time_ms": elapsed_time,
             }
 
         except requests.exceptions.RequestException as e:
-            self.metrics['requests_failed'] += 1
+            self.metrics["requests_failed"] += 1
             logger.error(f"Request failed: {str(e)}")
             raise
 
@@ -400,8 +424,8 @@ class APILibrary:
         Example:
             | Response Should Contain Field | ${response} | data.device_id |
         """
-        data = response.get('data', {})
-        fields = field_path.split('.')
+        data = response.get("data", {})
+        fields = field_path.split(".")
         value = data
 
         for field in fields:
@@ -414,10 +438,7 @@ class APILibrary:
 
     @keyword("Response Field Should Equal")
     def response_field_should_equal(
-        self,
-        response: Dict[str, Any],
-        field_path: str,
-        expected_value: Any
+        self, response: Dict[str, Any], field_path: str, expected_value: Any
     ):
         """
         Verify that a response field equals expected value.
@@ -430,8 +451,8 @@ class APILibrary:
         Example:
             | Response Field Should Equal | ${response} | data.status | active |
         """
-        data = response.get('data', {})
-        fields = field_path.split('.')
+        data = response.get("data", {})
+        fields = field_path.split(".")
         value = data
 
         for field in fields:
@@ -448,7 +469,9 @@ class APILibrary:
         logger.info(f"Field '{field_path}' verified: {value}")
 
     @keyword("Response Time Should Be Less Than")
-    def response_time_should_be_less_than(self, response: Dict[str, Any], max_time_ms: int):
+    def response_time_should_be_less_than(
+        self, response: Dict[str, Any], max_time_ms: int
+    ):
         """
         Verify that response time is less than maximum allowed time.
 
@@ -459,7 +482,7 @@ class APILibrary:
         Example:
             | Response Time Should Be Less Than | ${response} | 2000 |
         """
-        actual_time = response.get('response_time_ms', 0)
+        actual_time = response.get("response_time_ms", 0)
 
         if actual_time > int(max_time_ms):
             raise AssertionError(
@@ -481,11 +504,13 @@ class APILibrary:
             | Log | Total requests: ${metrics['requests_sent']} |
         """
         avg_response_time = 0
-        if self.metrics['requests_sent'] > 0:
-            avg_response_time = self.metrics['total_response_time'] / self.metrics['requests_sent']
+        if self.metrics["requests_sent"] > 0:
+            avg_response_time = (
+                self.metrics["total_response_time"] / self.metrics["requests_sent"]
+            )
 
         metrics_copy = self.metrics.copy()
-        metrics_copy['avg_response_time_ms'] = avg_response_time
+        metrics_copy["avg_response_time_ms"] = avg_response_time
 
         logger.info(f"API Metrics: {metrics_copy}")
         return metrics_copy
@@ -505,8 +530,8 @@ class APILibrary:
         Example:
             | ${device_id}= | Extract Response Field | ${response} | data.device_id |
         """
-        data = response.get('data', {})
-        fields = field_path.split('.')
+        data = response.get("data", {})
+        fields = field_path.split(".")
         value = data
 
         for field in fields:
