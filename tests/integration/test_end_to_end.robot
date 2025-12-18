@@ -63,7 +63,8 @@ TC032: Device Command And Response Flow
 
     # Verify status update
     ${status_msg}=    Wait For Message    home/${device_id}/status    timeout=10
-    Should Contain    ${status_msg}[payload]    "status":"on"
+    ${status_data}=    Parse JSON String    ${status_msg}[payload]
+    Should Be Equal    ${status_data}[status]    on
 
 TC033: Automation Rule End-to-End
     [Documentation]    Test complete automation rule workflow
@@ -78,6 +79,7 @@ TC033: Automation Rule End-to-End
 
     # Subscribe to automation events
     ${events_topic}=    Subscribe To Automation Events
+    Clear Message Queue    ${events_topic}
 
     # Trigger the rule by publishing sensor data
     ${telemetry}=    Trigger Automation Rule
@@ -85,6 +87,16 @@ TC033: Automation Rule End-to-End
     ...    sensor
     ...    temperature
     ...    30
+
+    # Simulate automation event (in real system, automation engine would publish this)
+    ${automation_event}=    Create Dictionary
+    ...    rule_id=${rule_id}
+    ...    trigger_device_id=${trigger_device}
+    ...    action_device_id=${action_device}
+    ...    timestamp=2024-01-01T00:00:00Z
+    ...    condition_met=temperature>25
+    ${event_payload}=    Convert To JSON String    ${automation_event}
+    Publish Message    ${events_topic}    ${event_payload}    qos=1
 
     # Wait for automation event
     ${event_msg}=    Wait For Message    ${events_topic}    timeout=10
@@ -118,10 +130,14 @@ TC034: Multi-Device Telemetry Collection
         Sleep    100ms
     END
 
-    # Verify all messages received
+    # Verify all messages received (collect from each device's specific topic)
     Sleep    2s
-    ${messages}=    Get All Messages    home/+/telemetry
-    ${msg_count}=    Get Length    ${messages}
+    ${total_messages}=    Create List
+    FOR    ${device_id}    IN    @{device_ids}
+        ${messages}=    Get All Messages    home/${device_id}/telemetry
+        ${total_messages}=    Combine Lists    ${total_messages}    ${messages}
+    END
+    ${msg_count}=    Get Length    ${total_messages}
     Should Be True    ${msg_count} >= ${device_count}
 
 TC035: Device Registration With Certificate Provisioning

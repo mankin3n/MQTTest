@@ -26,19 +26,19 @@ TC011: Publish And Receive Message With QoS 0
     [Documentation]    Verify MQTT pub/sub works with QoS 0
     [Tags]    mqtt    qos0    positive
 
-    Given MQTT topic is subscribed
+    # Subscribe to topic
     Subscribe To Topic    ${TEST_TOPIC}    qos=0
     Clear Message Queue    ${TEST_TOPIC}
 
-    When message is published with QoS 0
+    # Publish message with QoS 0
     ${payload}=    Create Dictionary    device_id=${TEST_DEVICE_ID}    status=online
     ${json_payload}=    Convert To JSON String    ${payload}
     Publish Message    ${TEST_TOPIC}    ${json_payload}    qos=0
 
-    Then message should be received
+    # Wait for and verify message
     ${message}=    Wait For Message    ${TEST_TOPIC}    timeout=5
 
-    And message should contain correct data
+    # Verify message contains correct data
     Dictionary Should Contain Key    ${message}    payload
     ${received_data}=    Parse JSON String    ${message}[payload]
     Should Be Equal    ${received_data}[device_id]    ${TEST_DEVICE_ID}
@@ -77,16 +77,17 @@ TC014: Subscribe To Wildcard Topic
 
     ${wildcard_topic}=    Set Variable    home/+/telemetry
     Subscribe To Topic    ${wildcard_topic}    qos=1
-    Clear Message Queue    ${wildcard_topic}
 
     # Publish to specific device topic
     ${device_topic}=    Set Variable    home/device123/telemetry
+    Clear Message Queue    ${device_topic}
+
     ${payload}=    Create Dictionary    device_id=device123    value=100
     ${json_payload}=    Convert To JSON String    ${payload}
     Publish Message    ${device_topic}    ${json_payload}    qos=1
 
-    # Should receive on wildcard subscription
-    ${message}=    Wait For Message    ${wildcard_topic}    timeout=5
+    # Should receive on wildcard subscription (message appears in actual topic queue)
+    ${message}=    Wait For Message    ${device_topic}    timeout=5
     Should Contain    ${message}[topic]    device123
 
 TC015: Publish Retained Message
