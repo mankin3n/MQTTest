@@ -112,6 +112,11 @@ jobs:
                 --variable ENV:ci \
                 tests/api/
 
+      - name: Generate JUnit XML
+        if: always()
+        run: |
+          rebot --outputdir reports --xunit xunit.xml --log NONE --report NONE reports/output.xml || true
+
       - name: Upload test reports
         if: always()
         uses: actions/upload-artifact@v4
@@ -161,6 +166,11 @@ jobs:
                 --include mqtt \
                 --variable ENV:ci \
                 tests/mqtt/
+
+      - name: Generate JUnit XML
+        if: always()
+        run: |
+          rebot --outputdir reports --xunit xunit.xml --log NONE --report NONE reports/output.xml || true
 
       - name: Upload test reports
         if: always()
@@ -212,6 +222,11 @@ jobs:
                 --variable ENV:ci \
                 tests/security/
 
+      - name: Generate JUnit XML
+        if: always()
+        run: |
+          rebot --outputdir reports --xunit xunit.xml --log NONE --report NONE reports/output.xml || true
+
       - name: Upload test reports
         if: always()
         uses: actions/upload-artifact@v4
@@ -261,6 +276,11 @@ jobs:
                 --include integration \
                 --variable ENV:ci \
                 tests/integration/
+
+      - name: Generate JUnit XML
+        if: always()
+        run: |
+          rebot --outputdir reports --xunit xunit.xml --log NONE --report NONE reports/output.xml || true
 
       - name: Upload test reports
         if: always()
@@ -312,6 +332,11 @@ jobs:
                 --variable ENV:ci \
                 tests/
 
+      - name: Generate JUnit XML
+        if: always()
+        run: |
+          rebot --outputdir reports --xunit xunit.xml --log NONE --report NONE reports/output.xml || true
+
       - name: Upload test reports
         if: always()
         uses: actions/upload-artifact@v4
@@ -341,6 +366,7 @@ jobs:
       - name: Merge test results
         run: |
           mkdir -p merged-reports
+          find all-reports -name "xunit.xml" -exec cp {} merged-reports/ \; || true
           find all-reports -name "output.xml" -exec cp {} merged-reports/ \; || true
           ls -R all-reports || echo "No test reports found"
 
@@ -355,5 +381,5 @@ jobs:
         if: always()
         continue-on-error: true
         with:
-          files: all-reports/**/output.xml
+          files: all-reports/**/xunit.xml
           check_name: Test Results
