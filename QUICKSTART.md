@@ -157,14 +157,4 @@ curl http://localhost:8000/health
 1. **Explore the tests**: Check `tests/` directory
 2. **Read the docs**: See [README.md](README.md)
 3. **Run in parallel**: `python3 cli.py run --suite all --parallel`
-4. **Create custom tests**: See [CONTRIBUTING.md](CONTRIBUTING.md)
 
-## Getting Help
-
-- Check [README.md](README.md) for detailed documentation
-- See [ARCHITECTURE.md](ARCHITECTURE.md) for system design
-- Create an issue on GitHub
-
----
-
-Happy Testing! 🚀
