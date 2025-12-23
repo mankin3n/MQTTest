@@ -53,6 +53,9 @@ pabot_results/
 .env
 *.local
 
+# Certs 
+certs/
+
 # OS
 .DS_Store
 Thumbs.db

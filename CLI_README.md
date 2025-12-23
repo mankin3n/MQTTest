@@ -321,17 +321,3 @@ xdg-open reports/<report_dir>/report.html  # Linux
 
 ? Open HTML report in browser? (Y/n)
 ```
-
-## Contributing
-
-Feel free to enhance the CLI further! Some ideas:
-- Add test result statistics dashboard
-- Integrate with test metrics
-- Add test scheduling
-- Create custom test combinations
-- Add performance profiling
-- Generate test coverage reports
-
-## License
-
-Same as the main project.

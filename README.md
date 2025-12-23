@@ -505,10 +505,6 @@ ${mqtt_metrics}=   Get MQTT Metrics
 4. Push to branch (`git push origin feature/amazing-feature`)
 5. Open Pull Request
 
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
 ## Acknowledgments
 
 - Robot Framework community
@@ -520,7 +516,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 For questions or support:
 - Create an issue on GitHub
-- Email: your.email@example.com
+- Email: pauli@manki.fi
 
 ---
 
